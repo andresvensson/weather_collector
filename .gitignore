@@ -2,3 +2,6 @@ info.txt
 old_collecter.py
 old_transfer_db.py
 logs/
+.idea/
+__pycache__/
+venv/
