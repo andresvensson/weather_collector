@@ -2,7 +2,7 @@ secret.py
 info.txt
 old_collecter.py
 old_transfer_db.py
-api_data.pki
+api_data.pkl
 logs/
 .idea/
 __pycache__/
