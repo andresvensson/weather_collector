@@ -3,6 +3,7 @@ info.txt
 old_collecter.py
 old_transfer_db.py
 api_data.pkl
+all_timezones.txt
 logs/
 .idea/
 __pycache__/
