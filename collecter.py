@@ -1,3 +1,4 @@
+import sys
 from datetime import datetime, timezone
 import secret
 from pyowm import OWM
@@ -22,10 +23,15 @@ store_to_file = True
 
 
 class api:
-    def __init__(self) -> None:
+    def __init__(self, store_db=False) -> None:
         self.data = {}
         self.sql_data = {}
         self.call_api()
+
+        self.store_db = store_db
+        if self.store_db:
+            self.store_to_db()
+
 
     def call_api(self):
 
@@ -50,82 +56,83 @@ class api:
                 w = pickle.load(f)
 
         if not w:
-            print("Yahoo weather?")
+            print("No data form owm, exit code. (Add Yahoo weather or other service?)")
+            sys.exit()
 
-        print(w.humidity)
         self.data = w
         self.sql_data = self.sort_data(w)
 
-
     def sort_data(self, w: dict) -> dict:
-        print("Hej")
-        print(w.humidity)
-        #print(w.values())
-        d = {}
-        return d
-
-
-    def data(self):
-        # TODO
-        # catch one api call and save it to a file for re-use (development)
-        w = self.data
         data = {}
-        #try:
-            # owm = OWM(owm_apikey)
-            # mgr = owm.weather_manager()
-            # obs = mgr.weather_at_id(own_location_id)
-            # w = obs.weather
+        data['source'] = "Open Weather Map"
+        if w.humidity:
+            data['humidity'] = w.humidity
+        if w.detailed_status:
+            data['status'] = w.detailed_status
 
-            # with open("api_data.pkl", "wb") as f:
-            #    pickle.dump(w, f)
+        if w.temperature(unit="fahrenheit")['temp']:
+            tmp_f = w.temperature(unit="fahrenheit")['temp']
+            convert = (float(tmp_f) - 32) * .5556
+            data['temperature'] = round(convert, 2)
 
-            #with open('api_data.pkl', 'rb') as f:
-            #    w = pickle.load(f)
+        if w.rain:
+            if '1h' in w.rain():
+                data['rain_1h'] = w.rain()['1h']
+            if '3h' in w.rain():
+                data['rain_3h'] = w.rain()['3h']
+            else:
+                data['rain_1h'] = w.rain()
+        if w.snow:
+            if '1h' in w.snow():
+                data['snow_1h'] = w.snow()['1h']
+            if '3h' in w.snow():
+                data['snow_3h'] = w.snow()['3h']
+            else:
+                data['snow_1h'] = w.snow()
+        if w.wind:
+            data['wind_speed'] = w.wind()['speed']
+            data['wind_deg'] = w.wind()['deg']
+            if 'gust' in w.wind():
+                data['wind_gust'] = w.wind()['gust']
+            else:
+                pass
+        if w.clouds:
+            data['clouds'] = w.clouds
 
-        #except Exception as E:
-        #    print("No data from OWM. Error:", E)
-
-        if not w:
-            print("Yahoo weather?")
-
-        #print(w.humidity)
-        # print(w.)
-
-        sunrise_date = w.sunrise_time(timeformat='date')
-        data['sunrise_date'] = sunrise_date
-        # sunrise_iso = w.sunrise_time(timeformat='iso')
-        # sunrise_iso = w.sunrise_time(timeformat='iso', tzinfo='1')
-        # data['sunrise_iso'] = sunrise_iso
-        # sunrise = w.sunrise_time()
-        # data['sunrise'] = sunrise
-
-        # print("TEST:", w.humidity)
-
-        return data
+        if w.sunrise_time('iso'):
+            sunrise = w.sunrise_time('iso')
+            data['sunrise'] = datetime.strptime(sunrise, '%Y-%m-%d %H:%M:%S+00:00')
+            # data['sunrise'] = w.sunrise_time('iso')
+        if w.sunset_time('iso'):
+            sunset = w.sunset_time('iso')
+            data['sunset'] = datetime.strptime(sunset, '%Y-%m-%d %H:%M:%S+00:00')
+            # data['sunset'] = w.sunset_time('iso')
+        if w.reference_time(timeformat='iso'):
+            api_time = w.reference_time(timeformat='iso')
+            data['api_time'] = datetime.strptime(api_time, '%Y-%m-%d %H:%M:%S+00:00')
+            # data['api_time'] = w.reference_time(timeformat='iso')
+        if data['temperature']:
+            return data
+        else:
+            raise Exception("did not have a temperature value, discarding")
 
     def pretty_print(self):
-        d = self.data
-        print("data:\n", d)
-        # print("date:", d['sunrise_date'], "type:", type(d['sunrise_date']))
-        # print("iso:", d['sunrise_iso'], "type:", type(d['sunrise_iso']))
-        # print("UNIX: data['sunrise']:", d['sunrise'], "type:", type(d['sunrise']))
-        # print(datetime.utcfromtimestamp(d['sunrise']).strftime('%Y-%m-%d %H:%M:%S'))
-        # convert_unix = datetime.utcfromtimestamp(d['sunrise']).strftime('%Y-%m-%d %H:%M:%S')
-        # print("timenow():", Time.tzinfo)
-        # local_tz = pytz.timezone('Europe/Stockholm')
-        # time_test = d['sunrise']
-        # time_test = time_test.replace(tzinfo=local_tz)
-        # print("Works?:", time_test, convert_unix)
+        print("value : key : datatype")
+        for x in self.sql_data:
+            print(x, ":", self.sql_data[x], ":", type(self.sql_data[x]))
 
-        # print((d['sunrise_date'].timezone.utc))
+    def store_to_db(self):
+        # TODO
+        print("Initiate database store pls..")
 
 
 def start():
-    print("Hej")
-    a = api()
-    # print(a.pretty_print())
-    print(a.pretty_print())
-    # print(api.data())
+    # initiate class
+    #a = api(store_db=True)
+    a = api(True)
+    #a = api()
+    print("Do a pretty print:")
+    a.pretty_print()
 
 
 if __name__ == "__main__":
