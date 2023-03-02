@@ -1,4 +1,5 @@
 import sys
+import pymysql
 from datetime import datetime, timezone
 import secret
 from pyowm import OWM
@@ -32,7 +33,6 @@ class api:
         if self.store_db:
             self.store_to_db()
 
-
     def call_api(self):
 
         w = None
@@ -49,7 +49,8 @@ class api:
                     pass
 
             except Exception as E:
-                print("No data from OWM. Error:", E)
+                text = "No data from OWM. Error:" + str(E)
+                self.write_log(text)
 
         else:
             with open('api_data.pkl', 'rb') as f:
@@ -124,13 +125,52 @@ class api:
     def store_to_db(self):
         # TODO
         print("Initiate database store pls..")
+        h, u, p, db, t = secret.sql()
+        try:
+            columns = []
+            values = []
+            for x in self.sql_data:
+                columns.append(x)
+                values.append(self.sql_data[x])
+
+            database = pymysql.connect(host=h, user=u, password=p, db=db)
+            sql_string = 'INSERT INTO ' + t + ' (' + ', '.join(columns) + ') VALUES (' + (
+                            '%s, ' * (len(columns) - 1)) + '%s)'
+
+            cursor = database.cursor()
+            cursor.execute(sql_string, tuple(values))
+            database.commit()
+            database.close()
+
+        except pymysql.Error as e:
+            text = "Error saving to DB: " + str(e)
+            # remove print later
+            print(text)
+            self.write_log(text)
+
+
+    def write_log(self, text: str):
+        print("do it")
+        try:
+            f_name = "log_y" + str(datetime.now().strftime("%Y")) + "_w" + str(datetime.now().strftime("%W")) + ".txt"
+            f = open(secret.log_dir() + f_name, "a")
+            ts = datetime.today().replace(microsecond=0)
+            text = "[" + str(ts) + "] " + text + "\n"
+            print(text)
+            f.write(str(text))
+            f.close()
+
+        except Exception as e:
+            print("Could not write log: " + str(e))
+            print("Tried to log: ", text)
+            pass
 
 
 def start():
     # initiate class
-    #a = api(store_db=True)
+    # a = api(store_db=True)
     a = api(True)
-    #a = api()
+    # a = api()
     print("Do a pretty print:")
     a.pretty_print()
 
