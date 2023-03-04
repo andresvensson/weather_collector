@@ -21,6 +21,7 @@ if not own_location_id:
 # testing
 online_call = False
 store_to_file = True
+old_db = False
 
 
 class api:
@@ -135,11 +136,18 @@ class api:
 
             database = pymysql.connect(host=h, user=u, password=p, db=db)
             sql_string = 'INSERT INTO ' + t + ' (' + ', '.join(columns) + ') VALUES (' + (
-                            '%s, ' * (len(columns) - 1)) + '%s)'
+                    '%s, ' * (len(columns) - 1)) + '%s)'
 
             cursor = database.cursor()
             cursor.execute(sql_string, tuple(values))
             database.commit()
+            # also supply older database
+            if old_db:
+                values = (str(self.sql_data['temperature']), str(self.sql_data['humidity']),
+                          str(self.sql_data['status']), Time)
+                cursor.execute(secret.old_db_sql(), values)
+                database.commit()
+
             database.close()
 
         except pymysql.Error as e:
@@ -147,7 +155,6 @@ class api:
             # remove print later
             print(text)
             self.write_log(text)
-
 
     def write_log(self, text: str):
         print("do it")
