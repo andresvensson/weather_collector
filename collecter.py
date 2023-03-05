@@ -19,9 +19,9 @@ if not own_location_id:
     own_location_id = secret.own_location_id()
 
 # testing
-online_call = False
-store_to_file = True
-old_db = False
+online_call = True
+store_to_file = False
+old_db = True
 
 
 class api:
@@ -124,8 +124,6 @@ class api:
             print(x, ":", self.sql_data[x], ":", type(self.sql_data[x]))
 
     def store_to_db(self):
-        # TODO
-        print("Initiate database store pls..")
         h, u, p, db, t = secret.sql()
         try:
             columns = []
@@ -152,18 +150,14 @@ class api:
 
         except pymysql.Error as e:
             text = "Error saving to DB: " + str(e)
-            # remove print later
-            print(text)
             self.write_log(text)
 
     def write_log(self, text: str):
-        print("do it")
         try:
             f_name = "log_y" + str(datetime.now().strftime("%Y")) + "_w" + str(datetime.now().strftime("%W")) + ".txt"
             f = open(secret.log_dir() + f_name, "a")
             ts = datetime.today().replace(microsecond=0)
             text = "[" + str(ts) + "] " + text + "\n"
-            print(text)
             f.write(str(text))
             f.close()
 
@@ -175,11 +169,9 @@ class api:
 
 def start():
     # initiate class
-    # a = api(store_db=True)
-    a = api(True)
-    # a = api()
-    print("Do a pretty print:")
-    a.pretty_print()
+    a = api(store_db=True)
+    # print("Do a pretty print:")
+    # a.pretty_print()
 
 
 if __name__ == "__main__":
