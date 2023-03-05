@@ -139,14 +139,16 @@ class api:
             cursor = database.cursor()
             cursor.execute(sql_string, tuple(values))
             database.commit()
+            database.close()
             # also supply older database
             if old_db:
+                h, u, p, db, t = secret.old_sql()
+                database = pymysql.connect(host=h, user=u, password=p, db=db)
                 values = (str(self.sql_data['temperature']), str(self.sql_data['humidity']),
                           str(self.sql_data['status']), Time)
                 cursor.execute(secret.old_db_sql(), values)
                 database.commit()
-
-            database.close()
+                database.close()
 
         except pymysql.Error as e:
             text = "Error saving to DB: " + str(e)
