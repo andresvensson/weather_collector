@@ -124,8 +124,8 @@ class api:
             print(x, ":", self.sql_data[x], ":", type(self.sql_data[x]))
 
     def store_to_db(self):
-        h, u, p, db, t = secret.sql()
         try:
+            h, u, p, db, t = secret.sql()
             columns = []
             values = []
             for x in self.sql_data:
@@ -140,13 +140,14 @@ class api:
             cursor.execute(sql_string, tuple(values))
             database.commit()
             database.close()
-            # also supply older database
+            # also supply the older database
             if old_db:
-                h, u, p, db, t = secret.old_sql()
+                h, u, p, db = secret.old_sql()
                 database = pymysql.connect(host=h, user=u, password=p, db=db)
+                cursor = database.cursor()
                 values = (str(self.sql_data['temperature']), str(self.sql_data['humidity']),
                           str(self.sql_data['status']), Time)
-                cursor.execute(secret.old_db_sql(), values)
+                cursor.execute(secret.old_sql_query(), values)
                 database.commit()
                 database.close()
 
@@ -173,7 +174,7 @@ def start():
     # initiate class
     a = api(store_db=True)
     # print("Do a pretty print:")
-    # a.pretty_print()
+    #a.pretty_print()
 
 
 if __name__ == "__main__":
