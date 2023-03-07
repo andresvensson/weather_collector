@@ -18,7 +18,7 @@ own_location_id = None
 if not own_location_id:
     own_location_id = secret.own_location_id()
 
-# testing
+# adjust for testing
 online_call = True
 store_to_file = False
 old_db = True
@@ -78,19 +78,21 @@ class api:
             data['temperature'] = round(convert, 2)
 
         if w.rain:
-            if '1h' in w.rain():
-                data['rain_1h'] = w.rain()['1h']
-            if '3h' in w.rain():
-                data['rain_3h'] = w.rain()['3h']
+            if '1h' in w.rain.keys():
+                data['rain_1h'] = w.rain['1h']
+            if '3h' in w.rain.keys():
+                data['rain_3h'] = w.rain['3h']
             else:
-                data['rain_1h'] = w.rain()
+                pass
+
         if w.snow:
-            if '1h' in w.snow():
-                data['snow_1h'] = w.snow()['1h']
-            if '3h' in w.snow():
-                data['snow_3h'] = w.snow()['3h']
+            if '1h' in w.snow.keys():
+                data['snow_1h'] = w.snow['1h']
+            if '3h' in w.snow.keys():
+                data['snow_3h'] = w.snow['3h']
             else:
-                data['snow_1h'] = w.snow()
+                pass
+
         if w.wind:
             data['wind_speed'] = w.wind()['speed']
             data['wind_deg'] = w.wind()['deg']
@@ -172,9 +174,9 @@ class api:
 
 def start():
     # initiate class
-    a = api(store_db=True)
-    # print("Do a pretty print:")
-    #a.pretty_print()
+    a = api(store_db=False)
+    print("Do a pretty print:")
+    a.pretty_print()
 
 
 if __name__ == "__main__":
