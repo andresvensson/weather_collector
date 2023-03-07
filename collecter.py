@@ -174,9 +174,9 @@ class api:
 
 def start():
     # initiate class
-    a = api(store_db=False)
-    print("Do a pretty print:")
-    a.pretty_print()
+    a = api(store_db=True)
+    #print("Do a pretty print:")
+    #a.pretty_print()
 
 
 if __name__ == "__main__":
