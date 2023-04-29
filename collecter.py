@@ -5,6 +5,7 @@ import secret
 from pyowm import OWM
 import pytz
 import pickle
+import json
 
 # CONSTANTS
 Time = datetime.today().replace(microsecond=0)
@@ -19,9 +20,9 @@ if not own_location_id:
     own_location_id = secret.own_location_id()
 
 # adjust for testing
-online_call = True
+online_call = False
 store_to_file = False
-old_db = True
+old_db = False
 
 
 class api:
@@ -65,8 +66,93 @@ class api:
         self.sql_data = self.sort_data(w)
 
     def sort_data(self, w: dict) -> dict:
-        data = {}
-        data['source'] = "Open Weather Map"
+
+        data = {'source': "Open Weather Map"}
+        #print("DATA?:", w, "type: ", type(w))
+        print("prnt obejct:", w, "detailed status?:", w.temperature())
+        dc = w.to_dict()
+        # dump_dict = w.to_dict()
+        print("Dump dict:", dc, "type:", type(dc))
+
+        d = json.dumps(dc)
+        print("json dump:", d)
+
+        for key, value in dc.items():
+            print(key, ":", value, "type", type(value))
+
+        tmp_f = dc['temperature']
+        convert = (float(tmp_f['temp']) - 32) * .5556
+        print(tmp_f['temp'], "Converted temp:", convert)
+
+
+        #for x in d:
+        #    print(x, ":", d[x])
+
+
+        #for k in dump_dict:
+        #    print(k, ":", dump_dict[k])
+        sys.exit()
+        # raise Exception("KILL code")
+        # feed all values to a test db (set secret)
+
+
+        '''
+        if w.humidity:
+            data['humidity'] = w.humidity
+        if w.detailed_status:
+            data['status'] = w.detailed_status
+
+        if w.temperature(unit="fahrenheit")['temp']:
+            tmp_f = w.temperature(unit="fahrenheit")['temp']
+            convert = (float(tmp_f) - 32) * .5556
+            data['temperature'] = round(convert, 2)
+
+        if w.rain:
+            if '1h' in w.rain.keys():
+                data['rain_1h'] = w.rain['1h']
+            if '3h' in w.rain.keys():
+                data['rain_3h'] = w.rain['3h']
+            else:
+                pass
+
+        if w.snow:
+            if '1h' in w.snow.keys():
+                data['snow_1h'] = w.snow['1h']
+            if '3h' in w.snow.keys():
+                data['snow_3h'] = w.snow['3h']
+            else:
+                pass
+
+        if w.wind:
+            data['wind_speed'] = w.wind()['speed']
+            data['wind_deg'] = w.wind()['deg']
+            if 'gust' in w.wind():
+                data['wind_gust'] = w.wind()['gust']
+            else:
+                pass
+        if w.clouds:
+            data['clouds'] = w.clouds
+
+        if w.sunrise_time('iso'):
+            sunrise = w.sunrise_time('iso')
+            data['sunrise'] = datetime.strptime(sunrise, '%Y-%m-%d %H:%M:%S+00:00')
+            # data['sunrise'] = w.sunrise_time('iso')
+        if w.sunset_time('iso'):
+            sunset = w.sunset_time('iso')
+            data['sunset'] = datetime.strptime(sunset, '%Y-%m-%d %H:%M:%S+00:00')
+            # data['sunset'] = w.sunset_time('iso')
+        if w.reference_time(timeformat='iso'):
+            api_time = w.reference_time(timeformat='iso')
+            data['api_time'] = datetime.strptime(api_time, '%Y-%m-%d %H:%M:%S+00:00')
+            # data['api_time'] = w.reference_time(timeformat='iso')
+        if data['temperature']:
+            return data
+        else:
+            raise Exception("did not have a temperature value, discarding")
+        '''
+
+    def sort_data1(self, w: dict) -> dict:
+        data = {'source': "Open Weather Map"}
         if w.humidity:
             data['humidity'] = w.humidity
         if w.detailed_status:
@@ -143,6 +229,7 @@ class api:
             database.commit()
             database.close()
             # also supply the older database
+            # this could be deleted if new data auto -> old data clausule, database rule
             if old_db:
                 h, u, p, db = secret.old_sql()
                 database = pymysql.connect(host=h, user=u, password=p, db=db)
@@ -174,9 +261,9 @@ class api:
 
 def start():
     # initiate class
-    a = api(store_db=True)
-    #print("Do a pretty print:")
-    #a.pretty_print()
+    a = api(store_db=False)
+    # print("Do a pretty print:")
+    a.pretty_print()
 
 
 if __name__ == "__main__":

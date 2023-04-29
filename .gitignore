@@ -1,5 +1,6 @@
 secret.py
 info.txt
+error.txt
 old_collecter.py
 old_transfer_db.py
 api_data.pkl
