@@ -95,6 +95,8 @@ class api:
         # raise Exception("KILL code")
         # feed all values to a test db (set secret)
 
+        # __________________________________________ #
+
 
         '''
         if w.humidity:
