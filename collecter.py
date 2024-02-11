@@ -20,9 +20,12 @@ if not own_location_id:
     own_location_id = secret.own_location_id()
 
 # adjust for testing
-online_call = False
-store_to_file = False
-old_db = False
+if not secret.settings():
+    online_call = False
+    store_to_file = False
+    old_db = False
+else:
+    online_call, store_to_file, old_db = secret.settings()
 
 
 class api:
